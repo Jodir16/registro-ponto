@@ -1,96 +1,76 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <title>Registro de Ponto</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    .container {
       max-width: 400px;
-      margin: 40px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
+      margin: auto;
     }
-    label {
-      margin-top: 15px;
-      display: block;
-      font-weight: bold;
-    }
-    input, select, button {
+    button {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
+      margin: 5px 0;
       font-size: 16px;
     }
-    #msg {
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .mensagem {
+      text-align: center;
       margin-top: 20px;
       font-weight: bold;
-      text-align: center;
     }
   </style>
 </head>
 <body>
-
-  <h2>Registro de Ponto</h2>
-
-  <label for="codigo">Código do Funcionário:</label>
-  <input type="text" id="codigo" placeholder="Ex: 001" maxlength="3" required>
-
-  <label for="tipo">Tipo de Registro:</label>
-  <select id="tipo" required>
-    <option value="">-- Selecione --</option>
-    <option value="Entrada">Entrada</option>
-    <option value="Inicio Pausa">Início Pausa</option>
-    <option value="Fim Pausa">Fim Pausa</option>
-    <option value="Saida">Saída</option>
-  </select>
-
-  <button id="registrar">Registrar</button>
-
-  <div id="msg"></div>
+  <div class="container">
+    <h2>Registro de Ponto</h2>
+    <input type="text" id="codigo" placeholder="Digite seu código">
+    <button onclick="registrar('Entrada')">Registrar Entrada</button>
+    <button onclick="registrar('Inicio Pausa')">Início da Pausa</button>
+    <button onclick="registrar('Fim Pausa')">Fim da Pausa</button>
+    <button onclick="registrar('Saida')">Registrar Saída</button>
+    <div class="mensagem" id="mensagem"></div>
+  </div>
 
   <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbw8MZlmwScuhHxQICilTRjF_WOwYojNFKFRw21r_-tFcPNUmGU8YLsnZVBHgaXZ_mVC/exec";
+    const endpoint = "https://script.google.com/macros/s/AKfycbxfvsgBw2EZYdKxVgNHHSYBBkYYzRY9i-L8ed1U_WoaDxFsNWfkJinEVRHHeIKo31TQ/exec";
 
-    document.getElementById("registrar").addEventListener("click", function () {
-      const codigo = document.getElementById("codigo").value.trim();
-      const tipo = document.getElementById("tipo").value;
-
-      if (!codigo || !tipo) {
-        mostrarMensagem("Preencha todos os campos.", true);
+    function registrar(tipo) {
+      const codigo = document.getElementById('codigo').value.trim();
+      if (!codigo) {
+        mostrarMensagem("Por favor, insira seu código.", true);
         return;
       }
 
-      const formData = new URLSearchParams();
-      formData.append("codigo", codigo);
-      formData.append("tipo", tipo);
+      fetch(`${endpoint}?codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`)
+        .then(res => res.text())
+        .then(resposta => {
+          mostrarMensagem(resposta, resposta.toLowerCase().includes("erro"));
+        })
+        .catch(() => {
+          mostrarMensagem("Erro ao conectar com o servidor.", true);
+        });
+    }
 
-      fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData.toString(),
-      })
-      .then(res => res.text())
-      .then(resposta => {
-        mostrarMensagem(resposta, resposta.toLowerCase().includes("erro"));
-      })
-      .catch(() => {
-        mostrarMensagem("Erro ao conectar com o servidor.", true);
-      });
-    });
-
-    function mostrarMensagem(msg, isErro) {
-      const el = document.getElementById("msg");
-      el.textContent = msg;
-      el.style.color = isErro ? "red" : "green";
+    function mostrarMensagem(texto, erro = false) {
+      const el = document.getElementById("mensagem");
+      el.textContent = texto;
+      el.style.color = erro ? "red" : "green";
     }
   </script>
-
 </body>
 </html>
+
 
 
 
