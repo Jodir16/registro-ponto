@@ -61,8 +61,12 @@
 
     mostrarMensagem("Enviando registro...", false);
 
-    fetch(`${endpoint}?codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`, {
+    fetch(endpoint, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`
     })
     .then(response => response.text())
     .then(text => {
@@ -86,5 +90,6 @@
 
 </body>
 </html>
+
 
 
