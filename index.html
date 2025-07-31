@@ -1,99 +1,89 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Registro de Ponto</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-    }
-    .container {
-      max-width: 400px;
-      margin: auto;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      font-size: 16px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    .mensagem {
-      text-align: center;
-      margin-top: 20px;
-      font-weight: bold;
-    }
-    iframe {
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Registro de Ponto</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 400px; margin: 30px auto; padding: 20px; }
+  label { display: block; margin-top: 15px; }
+  input, select, button { width: 100%; padding: 10px; font-size: 16px; margin-top: 5px; }
+  button { cursor: pointer; }
+  #msg { margin-top: 20px; font-weight: bold; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Registro de Ponto</h2>
-    <input type="text" id="codigo" placeholder="Digite seu código">
-    <button onclick="enviar('Entrada')">Registrar Entrada</button>
-    <button onclick="enviar('Inicio Pausa')">Início da Pausa</button>
-    <button onclick="enviar('Fim Pausa')">Fim da Pausa</button>
-    <button onclick="enviar('Saida')">Registrar Saída</button>
-    <div class="mensagem" id="mensagem"></div>
 
-    <form id="form" method="GET" target="iframeOculto">
-      <input type="hidden" name="codigo" id="inputCodigo">
-      <input type="hidden" name="tipo" id="inputTipo">
-    </form>
-    <iframe name="iframeOculto" id="iframeOculto"></iframe>
-  </div>
+<h2>Registro de Ponto</h2>
 
-  <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbyH9Ub65JmGsFxPyBllrA5Nq_v499kgwTUtOaWxgzuZ9bkvC8maeYeELiqnVnxOoPPL/exec";
+<label for="codigo">Código do Funcionário (ex: 001):</label>
+<input type="text" id="codigo" maxlength="3" pattern="[0-9]{3}" placeholder="001" required />
 
-    function mostrarMensagem(tipo) {
-      const agora = new Date();
-      const dataHora = agora.toLocaleString("pt-BR", { hour12: false });
-      const el = document.getElementById("mensagem");
-      el.textContent = `✔ ${tipo} registrada em ${dataHora}`;
-      el.style.color = "green";
+<label for="tipo">Tipo de Registro:</label>
+<select id="tipo" required>
+  <option value="">-- Selecione --</option>
+  <option value="Entrada">Entrada</option>
+  <option value="Inicio Pausa">Início Pausa</option>
+  <option value="Fim Pausa">Fim Pausa</option>
+  <option value="Saida">Saída</option>
+</select>
+
+<button id="btnRegistrar">Registrar</button>
+
+<p><strong>Data e Hora Atual:</strong> <span id="dataHora"></span></p>
+
+<div id="msg"></div>
+
+<script>
+  const endpoint = "https://script.google.com/macros/s/AKfycbzCol4v8iSqtMSZ1--bZblJr6KqC9NsWaemcACybtiDHEYpBUb7c_oalovn-4FadzTE/exec";
+
+  function atualizarDataHora() {
+    const now = new Date();
+    const data = now.toLocaleDateString('pt-BR');
+    const hora = now.toLocaleTimeString('pt-BR', { hour12: false });
+    document.getElementById('dataHora').textContent = `${data} ${hora}`;
+  }
+
+  atualizarDataHora();
+  setInterval(atualizarDataHora, 1000);
+
+  document.getElementById('btnRegistrar').addEventListener('click', () => {
+    const codigo = document.getElementById('codigo').value.trim();
+    const tipo = document.getElementById('tipo').value;
+
+    if (!/^\d{3}$/.test(codigo)) {
+      mostrarMensagem("Código inválido. Deve conter 3 números.", true);
+      return;
     }
 
-    function enviar(tipo) {
-      const codigo = document.getElementById("codigo").value.trim();
-      if (!codigo) {
-        const el = document.getElementById("mensagem");
-        el.textContent = "Digite seu código";
-        el.style.color = "red";
-        return;
-      }
-
-      document.getElementById("inputCodigo").value = codigo;
-      document.getElementById("inputTipo").value = tipo;
-
-      const form = document.getElementById("form");
-      form.action = endpoint;
-      form.submit();
-
-      // Guardar o tipo temporariamente para usar no onload
-      window.tipoEnviado = tipo;
+    if (!tipo) {
+      mostrarMensagem("Selecione o tipo de registro.", true);
+      return;
     }
 
-    window.onload = () => {
-      document.getElementById("iframeOculto").onload = () => {
-        if (window.tipoEnviado) {
-          mostrarMensagem(window.tipoEnviado);
-          window.tipoEnviado = null;
-        }
-      };
-    };
-  </script>
+    mostrarMensagem("Enviando registro...", false);
+
+    // Usando GET para evitar problemas CORS com Apps Script
+    const url = `${endpoint}?codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`;
+
+    fetch(url)
+      .then(response => response.text())
+      .then(text => {
+        mostrarMensagem(text, text.toLowerCase().includes("erro"));
+      })
+      .catch(() => {
+        mostrarMensagem("Erro ao conectar com o servidor.", true);
+      });
+  });
+
+  function mostrarMensagem(msg, erro = false) {
+    const div = document.getElementById('msg');
+    div.textContent = msg;
+    div.style.color = erro ? 'red' : 'green';
+  }
+</script>
+
 </body>
 </html>
-
 
 
 
