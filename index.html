@@ -1,118 +1,89 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Registro de Ponto</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 40px;
-      max-width: 400px;
-      margin: auto;
-    }
-    h1, #dataHoraAtual {
-      text-align: center;
-      color: #333;
-    }
-    #dataHoraAtual {
-      font-weight: bold;
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    input,
-    select,
-    button {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    #mensagem {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Registro de Ponto</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 400px; margin: 30px auto; }
+  label { display: block; margin-top: 15px; }
+  select, input { width: 100%; padding: 8px; font-size: 16px; margin-top: 5px; }
+  button { margin-top: 20px; padding: 10px; width: 100%; font-size: 18px; }
+  #msg { margin-top: 20px; font-weight: bold; }
+</style>
 </head>
 <body>
-  <h1>Registro de Ponto</h1>
-  <div id="dataHoraAtual"></div>
 
-  <input type="text" id="codigo" placeholder="Digite seu código (ex: 001)" required />
-  <select id="tipoRegistro">
-    <option value="">Selecione o tipo de registro</option>
-    <option value="Entrada">Entrada</option>
-    <option value="Início Pausa">Início Pausa</option>
-    <option value="Fim Pausa">Fim Pausa</option>
-    <option value="Saída">Saída</option>
-  </select>
-  <button onclick="registrar()">Registrar</button>
-  <div id="mensagem"></div>
+<h2>Registro de Ponto</h2>
 
-  <script>
-    function atualizarDataHora() {
-      const dataHoraDiv = document.getElementById('dataHoraAtual');
-      const agora = new Date();
+<label for="codigo">Código do Funcionário:</label>
+<input type="text" id="codigo" maxlength="3" placeholder="Ex: 001" pattern="[0-9]{3}" required />
 
-      const dia = String(agora.getDate()).padStart(2, '0');
-      const mes = String(agora.getMonth() + 1).padStart(2, '0');
-      const ano = agora.getFullYear();
+<label for="tipo">Tipo de Registro:</label>
+<select id="tipo" required>
+  <option value="">-- Selecione --</option>
+  <option value="Entrada">Entrada</option>
+  <option value="Inicio Pausa">Início Pausa</option>
+  <option value="Fim Pausa">Fim Pausa</option>
+  <option value="Saida">Saída</option>
+</select>
 
-      const hora = String(agora.getHours()).padStart(2, '0');
-      const min = String(agora.getMinutes()).padStart(2, '0');
-      const seg = String(agora.getSeconds()).padStart(2, '0');
+<p><strong>Data e Hora atual:</strong> <span id="dataHora"></span></p>
 
-      const dataHoraFormatada = `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
-      dataHoraDiv.textContent = "Data e Hora atual: " + dataHoraFormatada;
+<button id="btnRegistrar">Registrar</button>
+
+<div id="msg"></div>
+
+<script>
+  const endpoint = "https://script.google.com/macros/s/AKfycbwjWH5ghOXybX0sHJHpqoO0jtQJEOZqrg9FNmai49eNpo9IeuVS0E49MAU_u-HGlRyc/exec";
+
+  function atualizarDataHora() {
+    const now = new Date();
+    const data = now.toLocaleDateString('pt-BR');
+    const hora = now.toLocaleTimeString('pt-BR', {hour12:false});
+    document.getElementById('dataHora').textContent = data + " " + hora;
+  }
+
+  atualizarDataHora();
+  setInterval(atualizarDataHora, 1000);
+
+  document.getElementById('btnRegistrar').addEventListener('click', () => {
+    const codigo = document.getElementById('codigo').value.trim();
+    const tipo = document.getElementById('tipo').value;
+
+    if (!/^\d{3}$/.test(codigo)) {
+      mostrarMensagem("Código inválido. Use 3 dígitos numéricos.", true);
+      return;
+    }
+    if (!tipo) {
+      mostrarMensagem("Selecione o tipo de registro.", true);
+      return;
     }
 
-    setInterval(atualizarDataHora, 1000);
-    atualizarDataHora();
+    mostrarMensagem("Enviando registro...", false);
 
-    function registrar() {
-      var codigo = document.getElementById('codigo').value.trim();
-      var tipo = document.getElementById('tipoRegistro').value;
-      var mensagemDiv = document.getElementById('mensagem');
-
-      if (!codigo || !tipo) {
-        mensagemDiv.textContent = "Preencha todos os campos!";
-        mensagemDiv.style.color = "red";
-        return;
+    fetch(`${endpoint}?codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`, {
+      method: 'POST',
+    })
+    .then(response => response.text())
+    .then(text => {
+      if (text.toLowerCase().includes("erro")) {
+        mostrarMensagem("Erro: " + text, true);
+      } else {
+        mostrarMensagem(text, false);
       }
+    })
+    .catch(() => {
+      mostrarMensagem("Erro ao conectar com o servidor.", true);
+    });
+  });
 
-      const agora = new Date();
-      const dia = String(agora.getDate()).padStart(2, '0');
-      const mes = String(agora.getMonth() + 1).padStart(2, '0');
-      const ano = agora.getFullYear();
+  function mostrarMensagem(msg, erro = false) {
+    const div = document.getElementById('msg');
+    div.textContent = msg;
+    div.style.color = erro ? 'red' : 'green';
+  }
+</script>
 
-      const hora = String(agora.getHours()).padStart(2, '0');
-      const min = String(agora.getMinutes()).padStart(2, '0');
-      const seg = String(agora.getSeconds()).padStart(2, '0');
-
-      const dataHoraFormatada = `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
-
-      fetch("https://script.google.com/macros/s/AKfycbz1HfckJmUOXmVKK6n3Du6VZNvxp4j00F7c5mn6DjMh2Gk1R_Ml8Wj5scji0A6AZFB0/exec", {
-        method: "POST",
-        body: new URLSearchParams({ 
-          codigo: codigo, 
-          tipo: tipo,
-          dataHora: dataHoraFormatada 
-        }),
-      })
-        .then(response => response.text())
-        .then(data => {
-          mensagemDiv.textContent = "Registro feito com sucesso!";
-          mensagemDiv.style.color = "green";
-          document.getElementById('codigo').value = "";
-          document.getElementById('tipoRegistro').value = "";
-        })
-        .catch(error => {
-          mensagemDiv.textContent = "Erro ao registrar: " + error.message;
-          mensagemDiv.style.color = "red";
-        });
-    }
-  </script>
 </body>
 </html>
+
