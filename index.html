@@ -29,42 +29,48 @@
       margin-top: 20px;
       font-weight: bold;
     }
+    iframe {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Registro de Ponto</h2>
     <input type="text" id="codigo" placeholder="Digite seu código">
-    <button onclick="registrar('Entrada')">Registrar Entrada</button>
-    <button onclick="registrar('Inicio Pausa')">Início da Pausa</button>
-    <button onclick="registrar('Fim Pausa')">Fim da Pausa</button>
-    <button onclick="registrar('Saida')">Registrar Saída</button>
+    <button onclick="enviar('Entrada')">Registrar Entrada</button>
+    <button onclick="enviar('Inicio Pausa')">Início da Pausa</button>
+    <button onclick="enviar('Fim Pausa')">Fim da Pausa</button>
+    <button onclick="enviar('Saida')">Registrar Saída</button>
     <div class="mensagem" id="mensagem"></div>
+
+    <form id="form" method="GET" target="iframeOculto">
+      <input type="hidden" name="codigo" id="inputCodigo">
+      <input type="hidden" name="tipo" id="inputTipo">
+    </form>
+    <iframe name="iframeOculto" onload="mostrarMensagem('Registro enviado!')"></iframe>
   </div>
 
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbxfvsgBw2EZYdKxVgNHHSYBBkYYzRY9i-L8ed1U_WoaDxFsNWfkJinEVRHHeIKo31TQ/exec";
 
-    function registrar(tipo) {
-      const codigo = document.getElementById('codigo').value.trim();
+    function enviar(tipo) {
+      const codigo = document.getElementById("codigo").value.trim();
       if (!codigo) {
-        mostrarMensagem("Por favor, insira seu código.", true);
+        mostrarMensagem("Digite seu código", true);
         return;
       }
 
-      fetch(`${endpoint}?codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`)
-        .then(res => res.text())
-        .then(resposta => {
-          mostrarMensagem(resposta, resposta.toLowerCase().includes("erro"));
-        })
-        .catch(() => {
-          mostrarMensagem("Erro ao conectar com o servidor.", true);
-        });
+      const form = document.getElementById("form");
+      document.getElementById("inputCodigo").value = codigo;
+      document.getElementById("inputTipo").value = tipo;
+      form.action = endpoint;
+      form.submit();
     }
 
-    function mostrarMensagem(texto, erro = false) {
+    function mostrarMensagem(msg, erro = false) {
       const el = document.getElementById("mensagem");
-      el.textContent = texto;
+      el.textContent = msg;
       el.style.color = erro ? "red" : "green";
     }
   </script>
