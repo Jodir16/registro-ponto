@@ -48,31 +48,48 @@
       <input type="hidden" name="codigo" id="inputCodigo">
       <input type="hidden" name="tipo" id="inputTipo">
     </form>
-    <iframe name="iframeOculto" onload="mostrarMensagem('Registro enviado!')"></iframe>
+    <iframe name="iframeOculto" id="iframeOculto"></iframe>
   </div>
 
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbxfvsgBw2EZYdKxVgNHHSYBBkYYzRY9i-L8ed1U_WoaDxFsNWfkJinEVRHHeIKo31TQ/exec";
 
+    function mostrarMensagem(tipo) {
+      const agora = new Date();
+      const dataHora = agora.toLocaleString("pt-BR", { hour12: false });
+      const el = document.getElementById("mensagem");
+      el.textContent = `✔ ${tipo} registrada em ${dataHora}`;
+      el.style.color = "green";
+    }
+
     function enviar(tipo) {
       const codigo = document.getElementById("codigo").value.trim();
       if (!codigo) {
-        mostrarMensagem("Digite seu código", true);
+        const el = document.getElementById("mensagem");
+        el.textContent = "Digite seu código";
+        el.style.color = "red";
         return;
       }
 
-      const form = document.getElementById("form");
       document.getElementById("inputCodigo").value = codigo;
       document.getElementById("inputTipo").value = tipo;
+
+      const form = document.getElementById("form");
       form.action = endpoint;
       form.submit();
+
+      // Guardar o tipo temporariamente para usar no onload
+      window.tipoEnviado = tipo;
     }
 
-    function mostrarMensagem(msg, erro = false) {
-      const el = document.getElementById("mensagem");
-      el.textContent = msg;
-      el.style.color = erro ? "red" : "green";
-    }
+    window.onload = () => {
+      document.getElementById("iframeOculto").onload = () => {
+        if (window.tipoEnviado) {
+          mostrarMensagem(window.tipoEnviado);
+          window.tipoEnviado = null;
+        }
+      };
+    };
   </script>
 </body>
 </html>
