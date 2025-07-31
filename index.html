@@ -11,9 +11,14 @@
       max-width: 400px;
       margin: auto;
     }
-    h1 {
+    h1, #dataHoraAtual {
       text-align: center;
       color: #333;
+    }
+    #dataHoraAtual {
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-size: 18px;
     }
     input,
     select,
@@ -33,6 +38,8 @@
 </head>
 <body>
   <h1>Registro de Ponto</h1>
+  <div id="dataHoraAtual"></div>
+
   <input type="text" id="codigo" placeholder="Digite seu código (ex: 001)" required />
   <select id="tipoRegistro">
     <option value="">Selecione o tipo de registro</option>
@@ -45,6 +52,25 @@
   <div id="mensagem"></div>
 
   <script>
+    function atualizarDataHora() {
+      const dataHoraDiv = document.getElementById('dataHoraAtual');
+      const agora = new Date();
+
+      const dia = String(agora.getDate()).padStart(2, '0');
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const ano = agora.getFullYear();
+
+      const hora = String(agora.getHours()).padStart(2, '0');
+      const min = String(agora.getMinutes()).padStart(2, '0');
+      const seg = String(agora.getSeconds()).padStart(2, '0');
+
+      const dataHoraFormatada = `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
+      dataHoraDiv.textContent = "Hora atual: " + dataHoraFormatada;
+    }
+
+    setInterval(atualizarDataHora, 1000);
+    atualizarDataHora();
+
     function registrar() {
       var codigo = document.getElementById('codigo').value.trim();
       var tipo = document.getElementById('tipoRegistro').value;
@@ -56,18 +82,33 @@
         return;
       }
 
-      fetch("https://script.google.com/macros/s/AKfycbySFe0nCb8Cldoo7srYaJEvoKTNXwkSBvR4kPpW75pAL2g6File9n9fx6PdsIaG39nP/exec", {
+      const agora = new Date();
+      const dia = String(agora.getDate()).padStart(2, '0');
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const ano = agora.getFullYear();
+
+      const hora = String(agora.getHours()).padStart(2, '0');
+      const min = String(agora.getMinutes()).padStart(2, '0');
+      const seg = String(agora.getSeconds()).padStart(2, '0');
+
+      const dataHoraFormatada = `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
+
+      fetch("https://script.google.com/macros/s/AKfycbz1HfckJmUOXmVKK6n3Du6VZNvxp4j00F7c5mn6DjMh2Gk1R_Ml8Wj5scji0A6AZFB0/exec", {
         method: "POST",
-        body: new URLSearchParams({ codigo: codigo, tipo: tipo }),
+        body: new URLSearchParams({ 
+          codigo: codigo, 
+          tipo: tipo,
+          dataHora: dataHoraFormatada 
+        }),
       })
-        .then((response) => response.text())
-        .then((data) => {
+        .then(response => response.text())
+        .then(data => {
           mensagemDiv.textContent = "Registro feito com sucesso!";
           mensagemDiv.style.color = "green";
           document.getElementById('codigo').value = "";
           document.getElementById('tipoRegistro').value = "";
         })
-        .catch((error) => {
+        .catch(error => {
           mensagemDiv.textContent = "Erro ao registrar: " + error.message;
           mensagemDiv.style.color = "red";
         });
