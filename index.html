@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Registro de Ponto</title>
   <style>
     body {
@@ -16,7 +15,9 @@
       text-align: center;
       color: #333;
     }
-    input, select, button {
+    input,
+    select,
+    button {
       display: block;
       width: 100%;
       margin-bottom: 15px;
@@ -32,7 +33,7 @@
 </head>
 <body>
   <h1>Registro de Ponto</h1>
-  <input type="text" id="codigo" placeholder="Digite seu código (ex: 001)" required>
+  <input type="text" id="codigo" placeholder="Digite seu código (ex: 001)" required />
   <select id="tipoRegistro">
     <option value="">Selecione o tipo de registro</option>
     <option value="Entrada">Entrada</option>
@@ -55,21 +56,21 @@
         return;
       }
 
-      fetch("https://script.google.com/macros/s/AKfycbzDQXLiZqhaKnVsZI5353olB2q5oRB6sin1XEGsZD-DOp1Sf1WHTAGIkpnenZt112_E/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbybo94775kFFFaXT8PVwqZaebmg4W1WAzm9kYXHkYLs7k59fTF48PghXm5hy3bpRUU9/exec", {
         method: "POST",
-        body: new URLSearchParams({codigo: codigo, tipo: tipo})
+        body: new URLSearchParams({ codigo: codigo, tipo: tipo }),
       })
-      .then(response => response.text())
-      .then(data => {
-        mensagemDiv.textContent = "Registro feito com sucesso!";
-        mensagemDiv.style.color = "green";
-        document.getElementById('codigo').value = "";
-        document.getElementById('tipoRegistro').value = "";
-      })
-      .catch(error => {
-        mensagemDiv.textContent = "Erro ao registrar: " + error.message;
-        mensagemDiv.style.color = "red";
-      });
+        .then((response) => response.text())
+        .then((data) => {
+          mensagemDiv.textContent = "Registro feito com sucesso!";
+          mensagemDiv.style.color = "green";
+          document.getElementById('codigo').value = "";
+          document.getElementById('tipoRegistro').value = "";
+        })
+        .catch((error) => {
+          mensagemDiv.textContent = "Erro ao registrar: " + error.message;
+          mensagemDiv.style.color = "red";
+        });
     }
   </script>
 </body>
