@@ -65,7 +65,7 @@
       const seg = String(agora.getSeconds()).padStart(2, '0');
 
       const dataHoraFormatada = `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
-      dataHoraDiv.textContent = "Hora atual: " + dataHoraFormatada;
+      dataHoraDiv.textContent = "Data e Hora atual: " + dataHoraFormatada;
     }
 
     setInterval(atualizarDataHora, 1000);
