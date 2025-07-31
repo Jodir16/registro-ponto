@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Ponto</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 400px; margin: auto; }
+    input, select, button { width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h2>Registro de Ponto</h2>
+  <form id="form">
+    <label for="codigo">Código do Funcionário (ex: 001):</label>
+    <input type="text" id="codigo" name="codigo" required pattern="\d{3}" placeholder="001" />
+    
+    <div id="registroDiv" class="hidden">
+      <label for="registro">Tipo de Registro:</label>
+      <select id="registro" name="registro" required>
+        <option value="">Selecione</option>
+        <option value="Entrada">Entrada</option>
+        <option value="Início Pausa">Início Pausa</option>
+        <option value="Fim Pausa">Fim Pausa</option>
+        <option value="Saída">Saída</option>
+      </select>
+      <button type="submit">Registrar</button>
+    </div>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const form = document.getElementById('form');
+    const registroDiv = document.getElementById('registroDiv');
+    const codigoInput = document.getElementById('codigo');
+    const statusP = document.getElementById('status');
+
+    codigoInput.addEventListener('input', () => {
+      if (codigoInput.value.match(/^\d{3}$/)) {
+        registroDiv.classList.remove('hidden');
+      } else {
+        registroDiv.classList.add('hidden');
+      }
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const codigo = codigoInput.value;
+      const registro = document.getElementById('registro').value;
+
+      fetch("https://script.google.com/macros/s/AKfycbzDQXLiZqhaKnVsZI5353olB2q5oRB6sin1XEGsZD-DOp1Sf1WHTAGIkpnenZt112_E/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo: codigo, registro: registro })
+      })
+      .then(response => response.text())
+      .then(data => {
+        statusP.textContent = data;
+        form.reset();
+        registroDiv.classList.add('hidden');
+      })
+      .catch(error => {
+        statusP.textContent = "Erro ao registrar: " + error;
+      });
+    });
+  </script>
+</body>
+</html>
