@@ -1,95 +1,97 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Registro de Ponto</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 400px; margin: 30px auto; }
-  label { display: block; margin-top: 15px; }
-  select, input { width: 100%; padding: 8px; font-size: 16px; margin-top: 5px; }
-  button { margin-top: 20px; padding: 10px; width: 100%; font-size: 18px; }
-  #msg { margin-top: 20px; font-weight: bold; }
-</style>
+  <meta charset="UTF-8">
+  <title>Registro de Ponto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    label {
+      margin-top: 15px;
+      display: block;
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+    #msg {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Registro de Ponto</h2>
+  <h2>Registro de Ponto</h2>
 
-<label for="codigo">Código do Funcionário:</label>
-<input type="text" id="codigo" maxlength="3" placeholder="Ex: 001" pattern="[0-9]{3}" required />
+  <label for="codigo">Código do Funcionário:</label>
+  <input type="text" id="codigo" placeholder="Ex: 001" maxlength="3" required>
 
-<label for="tipo">Tipo de Registro:</label>
-<select id="tipo" required>
-  <option value="">-- Selecione --</option>
-  <option value="Entrada">Entrada</option>
-  <option value="Inicio Pausa">Início Pausa</option>
-  <option value="Fim Pausa">Fim Pausa</option>
-  <option value="Saida">Saída</option>
-</select>
+  <label for="tipo">Tipo de Registro:</label>
+  <select id="tipo" required>
+    <option value="">-- Selecione --</option>
+    <option value="Entrada">Entrada</option>
+    <option value="Inicio Pausa">Início Pausa</option>
+    <option value="Fim Pausa">Fim Pausa</option>
+    <option value="Saida">Saída</option>
+  </select>
 
-<p><strong>Data e Hora atual:</strong> <span id="dataHora"></span></p>
+  <button id="registrar">Registrar</button>
 
-<button id="btnRegistrar">Registrar</button>
+  <div id="msg"></div>
 
-<div id="msg"></div>
+  <script>
+    const endpoint = "https://script.google.com/macros/s/AKfycbw8MZlmwScuhHxQICilTRjF_WOwYojNFKFRw21r_-tFcPNUmGU8YLsnZVBHgaXZ_mVC/exec";
 
-<script>
-  const endpoint = "https://script.google.com/macros/s/AKfycbw8MZlmwScuhHxQICilTRjF_WOwYojNFKFRw21r_-tFcPNUmGU8YLsnZVBHgaXZ_mVC/exec";
+    document.getElementById("registrar").addEventListener("click", function () {
+      const codigo = document.getElementById("codigo").value.trim();
+      const tipo = document.getElementById("tipo").value;
 
-  function atualizarDataHora() {
-    const now = new Date();
-    const data = now.toLocaleDateString('pt-BR');
-    const hora = now.toLocaleTimeString('pt-BR', {hour12:false});
-    document.getElementById('dataHora').textContent = data + " " + hora;
-  }
-
-  atualizarDataHora();
-  setInterval(atualizarDataHora, 1000);
-
-  document.getElementById('btnRegistrar').addEventListener('click', () => {
-    const codigo = document.getElementById('codigo').value.trim();
-    const tipo = document.getElementById('tipo').value;
-
-    if (!/^\d{3}$/.test(codigo)) {
-      mostrarMensagem("Código inválido. Use 3 dígitos numéricos.", true);
-      return;
-    }
-    if (!tipo) {
-      mostrarMensagem("Selecione o tipo de registro.", true);
-      return;
-    }
-
-    mostrarMensagem("Enviando registro...", false);
-
-    fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: `codigo=${encodeURIComponent(codigo)}&tipo=${encodeURIComponent(tipo)}`
-    })
-    .then(response => response.text())
-    .then(text => {
-      if (text.toLowerCase().includes("erro")) {
-        mostrarMensagem("Erro: " + text, true);
-      } else {
-        mostrarMensagem(text, false);
+      if (!codigo || !tipo) {
+        mostrarMensagem("Preencha todos os campos.", true);
+        return;
       }
-    })
-    .catch(() => {
-      mostrarMensagem("Erro ao conectar com o servidor.", true);
-    });
-  });
 
-  function mostrarMensagem(msg, erro = false) {
-    const div = document.getElementById('msg');
-    div.textContent = msg;
-    div.style.color = erro ? 'red' : 'green';
-  }
-</script>
+      const formData = new URLSearchParams();
+      formData.append("codigo", codigo);
+      formData.append("tipo", tipo);
+
+      fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+      })
+      .then(res => res.text())
+      .then(resposta => {
+        mostrarMensagem(resposta, resposta.toLowerCase().includes("erro"));
+      })
+      .catch(() => {
+        mostrarMensagem("Erro ao conectar com o servidor.", true);
+      });
+    });
+
+    function mostrarMensagem(msg, isErro) {
+      const el = document.getElementById("msg");
+      el.textContent = msg;
+      el.style.color = isErro ? "red" : "green";
+    }
+  </script>
 
 </body>
 </html>
+
 
 
 
